@@ -34,6 +34,14 @@ public class UserController {
         }
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<User> getAuthenticatedUser(@org.springframework.security.core.annotation.AuthenticationPrincipal User user) {
+        if (user == null) {
+            return ResponseEntity.status(401).build();
+        }
+        return ResponseEntity.ok(user);
+    }
+
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
