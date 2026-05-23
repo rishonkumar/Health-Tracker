@@ -17,9 +17,6 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    // 256-bit minimum key for HMAC-SHA256
-    private static final String DEFAULT_SECRET = "3cfa76e624b527878d655f05df5e20ef9b736b45efaf18b2a3dc8f6efd559c5d";
-
     @Value("${application.security.jwt.secret-key:}")
     private String secretKey;
 
@@ -27,8 +24,14 @@ public class JwtService {
     private long jwtExpiration;
 
     private SecretKey getSigningKey() {
-        String secret = (secretKey == null || secretKey.isBlank()) ? DEFAULT_SECRET : secretKey;
-        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        if (secretKey == null || secretKey.isBlank()) {
+            throw new IllegalStateException(
+                "JWT Secret Key is not configured! " +
+                "Please configure 'application.security.jwt.secret-key' in your application.properties file. " +
+                "Since application.properties is gitignored, it will not be committed to source control."
+            );
+        }
+        return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
     public String extractUsername(String token) {
