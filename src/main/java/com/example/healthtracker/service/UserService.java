@@ -6,12 +6,15 @@ import com.example.healthtracker.dto.RegisterRequest;
 import com.example.healthtracker.entity.User;
 import com.example.healthtracker.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+
+import org.hibernate.engine.jdbc.env.internal.LobCreationLogging_.logger;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+import java.util.logging.Logger;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +24,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final Logger logger;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -52,14 +56,14 @@ public class UserService {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getUsername(),
-                        request.getPassword()
-                )
-        );
+                        request.getPassword()));
 
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
 
         String jwtToken = jwtService.generateToken(user);
+
+        logger.info("User logged in succesfully" + jwtToken);
 
         return AuthResponse.builder()
                 .token(jwtToken)
